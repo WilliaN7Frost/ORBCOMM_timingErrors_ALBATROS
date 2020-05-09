@@ -26,7 +26,7 @@ What this code repository accomplishes is taking in .raw files which contains Fo
         NOTE: This can be accomplished using the   'show_AutoCor_CrossCor.py'   code.
 
 
- NOTE: Steps 2-3-4 are performed by  'crossCor_givenObsTime.py'
+ NOTE: Steps ii to iv are performed by  'crossCor_givenObsTime.py'
     
    - 2) Once satellite channel regions have been identified (manually I'm afraid), isolate those channels (zero-out the others) and             invert back to a time-stream to obtain what should be a 'pure' satellite signal.
     
