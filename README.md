@@ -2,9 +2,9 @@
 
 
 Short Description:
-  - 'show_AutoCor_CrossCor.py' is used to determine what channels in our FT correspond to satellite signals. It can also be used to plot        preliminary cross-correlations of the deduced satellite signals.
+  - **'show_AutoCor_CrossCor.py'** is used to determine what channels in our FT correspond to satellite signals. It can also be used to plot        preliminary cross-correlations of the deduced satellite signals.
 
-  - 'crossCor_givenObsTime.py' outputs cross-correlation and noise data for a set amount of different observation times. Used to save the     cross-correlation and noise data to disk.
+  - **'crossCor_givenObsTime.py'** outputs cross-correlation and noise data for a set amount of different observation times. Used to save the     cross-correlation and noise data to disk.
 
   - 'findTimingError_givenObsTime.py' outputs timing errors in the cross-correlation of a given observation time. Usesthe output of           'crossCor_givenObsTime.py' to perform it's calculations.
 
