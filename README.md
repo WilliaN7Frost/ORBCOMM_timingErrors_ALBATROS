@@ -1,4 +1,5 @@
-# PHYS489_ProjectCode
+# PHYS489project_ORCOMMtimingErrors_forALBATROS
+
 
 Short Description:
   - 'show_AutoCor_CrossCor.py' is used to determine what channels in our FT correspond to satellite signals. It can also be used to plot        preliminary cross-correlations of the deduced satellite signals.
@@ -21,21 +22,21 @@ Detailed Description:
 What this code repository accomplishes is taking in .raw files which contains Fourier space data of 2 orthogonal polarizations of a signal and performs cross-correlation between certain channel regions in that Fourier space. These can then be used to quantify the timing error in a satellite signal with respect to integration/observation time. This can be used to estimate the synchronization capabilites of that satellite signal when used as a clock mechanism in radio interferometry. To obtain this timing error, the following protocol is followed using the pieces of code in this repo:
     
     
-   - Auto-correlate the Fourier Space data unpacked from the .RAW files to visualize which channel regions correspond to satellite            signals. You might need to rechannelize this unpacked data to better resolve signals of interest. 
-       NOTE: This can be accomplished using the   'show_AutoCor_CrossCor.py'   code.
+   - 1) Auto-correlate the Fourier Space data unpacked from the .RAW files to visualize which channel regions correspond to satellite           signals. You might need to rechannelize this unpacked data to better resolve signals of interest. 
+        NOTE: This can be accomplished using the   'show_AutoCor_CrossCor.py'   code.
 
 
  NOTE: Steps 2-3-4 are performed by  'crossCor_givenObsTime.py'
     
-   - Once satellite channel regions have been identified (manually I'm afraid), isolate those channels (zero-out the others) and              invert back to a time-stream to obtain what should be a 'pure' satellite signal.
+   - 2) Once satellite channel regions have been identified (manually I'm afraid), isolate those channels (zero-out the others) and             invert back to a time-stream to obtain what should be a 'pure' satellite signal.
     
-   - With the relevant signals now obtained, cross-correlation can be performed on both polarizations of a satellite signal of                interest. To quantify the noise in this cross-correlation, an over-estimate of it is produced by cross-correlating different            polarizitions of different satellite signals.
+   - 3) With the relevant signals now obtained, cross-correlation can be performed on both polarizations of a satellite signal of               interest. To quantify the noise in this cross-correlation, an over-estimate of it is produced by cross-correlating different             polarizitions of different satellite signals.
     
-   - For each observation time, different supplemental techniques can be applied before cross-correlation. One of them is zero-padding        the fourier transform, where the end result is a better interpolation between the points of the cross-correlations. To note that        this simply smooths out the data representing our cross-cor, and does really improve resolution. The option to zeropad or not is        given as an option in this code.
+   - 4) For each observation time, different supplemental techniques can be applied before cross-correlation. One of them is zero-               padding the fourier transform, where the end result is a better interpolation between the points of the cross-correlations. To           note that this simply smooths out the data representing our cross-cor, and does really improve resolution. The option to zeropad         or not is given as an option in this code.
 
       
-   - Once cross-correlations and their respective noises are obtained/saved for each observation time, a Monte Carlo approach can be          used to estimate the timing error. For simplicity, the timing error is defined as the standard deviation of many least-squares          quadratic fits performed on the cross-correlation peak. Again, for simplicity, this peak is defined to be the point with maximal        distance to the time axis (where cross-cor = 0). The cross-correlation data used for each least-squares fit is changed by                randomly shifting the noise function and adding it in to the cross-cor.
-     NOTE: This MC approach is accomplished using the   'findTimingErrors_givenObsTime.py'   code to estimate the phase error in a            satellite signal.
+   - 5) Once cross-correlations and their respective noises are obtained/saved for each observation time, a Monte Carlo approach can be         used to estimate the timing error. For simplicity, the timing error is defined as the standard deviation of many least-squares           quadratic fits performed on the cross-correlation peak. Again, for simplicity, this peak is defined to be the point with maximal         distance to the time axis (where cross-cor = 0). The cross-correlation data used for each least-squares fit is changed by               randomly shifting the noise function and adding it in to the cross-cor.
+        NOTE: This MC approach is accomplished using the   'findTimingErrors_givenObsTime.py'   code to estimate the phase error in a           satellite signal.
        
     
-   - To plot timing error as a function of observation time, simply use   'plotTimeErrors_vs_ObsTime.py'   , importing the relevant          saved outputs generated from   'findTimingErrors_givenObsTime.py' .
+   - 6) To plot timing error as a function of observation time, simply use   'plotTimeErrors_vs_ObsTime.py'   , importing the relevant           saved outputs generated from   'findTimingErrors_givenObsTime.py' .
