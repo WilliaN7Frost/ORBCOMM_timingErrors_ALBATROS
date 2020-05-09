@@ -6,13 +6,13 @@ Short Description:
 
   - **'crossCor_givenObsTime.py'** outputs cross-correlation and noise data for a set amount of different observation times. Used to save the     cross-correlation and noise data to disk.
 
-  - 'findTimingError_givenObsTime.py' outputs timing errors in the cross-correlation of a given observation time. Usesthe output of           'crossCor_givenObsTime.py' to perform it's calculations.
+  - **'findTimingError_givenObsTime.py'** outputs timing errors in the cross-correlation of a given observation time. Usesthe output of           **'crossCor_givenObsTime.py'** to perform it's calculations.
 
-  - 'plotTimingErrors_vs_ObsTime.py' uses the timing errors output by 'findTimingError_givenObsTime.py' and plots them as a function of        observation time.
+  - **'plotTimingErrors_vs_ObsTime.py'** uses the timing errors output by **'findTimingError_givenObsTime.py'** and plots them as a function of        observation time.
 
-  - 'timingErrorFuncs.py' contains the functions used in 'show_AutoCor_CrossCor.py' and 'crossCor_givenObsTime.py' .
+  - **'timingErrorFuncs.py'** contains the functions used in **'show_AutoCor_CrossCor.py'** and **'crossCor_givenObsTime.py'** .
 
-  - 'monteCarloFuncs.py' contains the functions used in 'findTimingError_givenObsTime.py' .
+  - **'monteCarloFuncs.py'** contains the functions used in **'findTimingError_givenObsTime.py'** .
 
 
 
@@ -23,10 +23,10 @@ What this code repository accomplishes is taking in .raw files which contains Fo
     
     
    - 1) Auto-correlate the Fourier Space data unpacked from the .RAW files to visualize which channel regions correspond to satellite           signals. You might need to rechannelize this unpacked data to better resolve signals of interest. 
-        NOTE: This can be accomplished using the   'show_AutoCor_CrossCor.py'   code.
+        NOTE: This can be accomplished using the   **'show_AutoCor_CrossCor.py'**   code.
 
 
- NOTE: Steps ii to iv are performed by  'crossCor_givenObsTime.py'
+ NOTE: Steps ii to iv are performed by  **'crossCor_givenObsTime.py'**
     
    - 2) Once satellite channel regions have been identified (manually I'm afraid), isolate those channels (zero-out the others) and             invert back to a time-stream to obtain what should be a 'pure' satellite signal.
     
@@ -36,7 +36,7 @@ What this code repository accomplishes is taking in .raw files which contains Fo
 
       
    - 5) Once cross-correlations and their respective noises are obtained/saved for each observation time, a Monte Carlo approach can be         used to estimate the timing error. For simplicity, the timing error is defined as the standard deviation of many least-squares           quadratic fits performed on the cross-correlation peak. Again, for simplicity, this peak is defined to be the point with maximal         distance to the time axis (where cross-cor = 0). The cross-correlation data used for each least-squares fit is changed by               randomly shifting the noise function and adding it in to the cross-cor.
-        NOTE: This MC approach is accomplished using the   'findTimingErrors_givenObsTime.py'   code to estimate the phase error in a           satellite signal.
+        NOTE: This MC approach is accomplished using the   **'findTimingErrors_givenObsTime.py'**   code to estimate the phase error in a           satellite signal.
        
     
-   - 6) To plot timing error as a function of observation time, simply use   'plotTimeErrors_vs_ObsTime.py'   , importing the relevant           saved outputs generated from   'findTimingErrors_givenObsTime.py' .
+   - 6) To plot timing error as a function of observation time, simply use   **'plotTimeErrors_vs_ObsTime.py'**   , importing the relevant           saved outputs generated from   **'findTimingErrors_givenObsTime.py'** .
