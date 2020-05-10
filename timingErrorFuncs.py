@@ -113,16 +113,24 @@ def getSatsFromFT(ft , satRegions , totRefChans):
 
 
 
-    # Used to align 2 signals that are not in the same channels
-    # Used in noise estimation. sat1 is shifted towards sat2
+    # Used to align 2 signals that are not found in the same channels
+    # Used in noise (over)estimation
 def alignSats( ft1,ft2 , sat1 , sat2 , totRefChans , doPlot=False):
+    """
+    ft1, ft2 : 1D or 2D array
+        Fourier Space data for which we want to shift one such as to align it with a channel region in the other
+    sat1, sat2 : 1D array
+        Each element of these arrays contains lower and upper bounds that constrain channel regions of interest to be aligned with each other
+    totRefChans : int
+        Total number of channels in the fourier space used by the user to define the subset channel regions of interest 
+    """
     
     #print("Initially, sat regions are " + str( (sat1[0],sat1[1]) ) +" "+ str( (sat2[0],sat2[1]) ) )
     
     ft_dims= np.ndim(ft1)
     if    ft_dims==1 : ft_len = len(ft1);  rangeAdjust = (ft_len)/totRefChans
     elif  ft_dims==2 : ft_len , inside_ft_len = ft1.shape;  rangeAdjust = (inside_ft_len)/totRefChans
-    else: print("Fourier Transform entered in 'getSatsFromFT' was not 1D or 2D"); return 
+    else: print("Fourier Transform entered in 'alignSats' was not 1D or 2D"); return 
     
     if doPlot:
         plt.figure()
@@ -138,22 +146,25 @@ def alignSats( ft1,ft2 , sat1 , sat2 , totRefChans , doPlot=False):
     sat1_width = sat1[1]-sat1[0]
     sat2_width = sat2[1]-sat2[0]
     
-    if ( sat1_width > sat1_width ):
-        shiftBy = int( sat1[0]-sat2[0] + (sat1_width-sat2_width)/2 )
-        sat2 = sat1.copy()
-        if ft_dims==1:
-            ft2 = np.roll( ft2 , int(shiftBy*rangeAdjust) )
-        else:
-            ft2 = np.roll( ft2 , int(shiftBy*rangeAdjust) , axis=1 )
-    
-    else:
+        # This conditional statement ensures that the center of the bigger channel interval is shifted towards the center of the smaller one.
+        # It also sets the bigger channel interval equal to the smaller one, such that once the shift is performed, the isolated channel
+        # intervals contain at most one complete satellite signal, and do not include parts of another.
+    if ( sat1_width > sat2_width ):
         shiftBy = int( sat2[0]-sat1[0] + (sat2_width-sat1_width)/2 )
         sat1 = sat2.copy()
         if ft_dims==1:
             ft1 = np.roll( ft1 , int(shiftBy*rangeAdjust) )
         else:
             ft1 = np.roll( ft1 , int(shiftBy*rangeAdjust) , axis=1 )
-            
+    
+    else:
+        shiftBy = int( sat1[0]-sat2[0] + (sat1_width-sat2_width)/2 )
+        sat2 = sat1.copy()
+        if ft_dims==1:
+            ft2 = np.roll( ft2 , int(shiftBy*rangeAdjust) )
+        else:
+            ft2 = np.roll( ft2 , int(shiftBy*rangeAdjust) , axis=1 )
+          
     #print("After shifting, sat regions are " + str( (sat1[0],sat1[1]) ) +" "+ str( (sat2[0],sat2[1]) ) )   
     if doPlot:
         plt.figure()
@@ -189,17 +200,24 @@ def x_fftshift(x):
 def doCrossCor(x,y):
         return np.fft.irfft( np.fft.rfft(x) * np.conj(np.fft.rfft(y)) )
 
+    # Used to perform cross-cor with zero-padding in the FTs
 def doCrossCor_zpad(x,y,zpadCoeff):
     xft = np.fft.rfft(x)
     yft = np.fft.rfft(y)
+    #print("xft,yft have shape " + str( (xft.shape,yft.shape) ))
     if np.ndim(x)==1:
-        xft = np.array( np.append( xft , np.zeros(int(len(xft)*zpadCoeff)) ) )
-        yft = np.array( np.append( yft , np.zeros(int(len(yft)*zpadCoeff)) ) )
+        xft = np.array( np.append( xft , np.zeros( int(len(xft)*zpadCoeff)) ) )
+        yft = np.array( np.append( yft , np.zeros( int(len(yft)*zpadCoeff)) ) )
     elif np.ndim(x)==2:
         xft = np.array( np.append( xft , np.zeros( (len(xft) , int(len(xft[0])*zpadCoeff)) ) , axis=1) )
         yft = np.array( np.append( yft , np.zeros( (len(yft) , int(len(yft[0])*zpadCoeff)) ) , axis=1) )
-        
+    #print("xft,yft (zeropad) have new shape " + str( (xft.shape,yft.shape) ))
     return np.fft.irfft( xft * np.conj(yft) )
+
+
+
+
+
 
 
 
@@ -354,6 +372,8 @@ def performCC_on2Sats( ft1,ft2 , satRegion1,satRegion2 , totRefChans , dt , newS
 
 
     # Function which allows to invert PFB, rechannelize PFB-inverse data, with options of plotting auto-cor and cross-cor
+    # Its base functionality is returning the inverse of PFB data called the recovered time-stream (RTS), although function arguments 
+    # can be changed to return or plot data in different forms
 def performInv_Rechan_AC_CC(fileID , fileNum , reChan=1025 , originalNumChans=2048 , originalSampRate = 2*(125e6) , saveFigs = False ,
                     trim=True , showRTS=False , performAutoCor=False , performCrossCor=False , doAllSats=False , zpadCoeff=0 ,
                     newSubLen=500 , useChunksOfRTS=True , returnRTS=True , returnFFT=False , freq_ranges=[] , freq_range_types=[]):

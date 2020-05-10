@@ -16,12 +16,12 @@ import corner
 def findPeak(timelag , cc , returnIndex=True):
     
     maxPeak = 0.
-    maxPeak_distToZero = timelag[-1]
+    maxPeak_distToZeroTimeLag = timelag[-1]
     index=0
     for i in range(len(timelag)):
-        if (np.abs(cc[i]) > np.abs(maxPeak)): maxPeak = cc[i];  maxPeak_distToZero = timelag[i];  index=i
+        if (np.abs(cc[i]) > np.abs(maxPeak)): maxPeak = cc[i];  maxPeak_distToZeroTimeLag = timelag[i];  index=i
     if returnIndex: return index
-    else: return maxPeak_distToZero , maxPeak
+    else: return maxPeak_distToZeroTimeLag , maxPeak
     
     
    
@@ -140,7 +140,6 @@ def runParabolaFitMC( startIndex , stopIndex , timelag , cc , noise , numTrials=
         corner.corner(peakScatter , labels=["a","peak_X","peak_Y"] , quantiles=[0.16,0.5,0.84] , show_titles=True)
     
     meds = np.median(peakScatter , axis=0)
-    #print(meds)
     quantiles = [ np.quantile(peakScatter , quantiles[0] , axis=0) , np.quantile(peakScatter , quantiles[1] , axis=0) ]
     
     if doPlot:

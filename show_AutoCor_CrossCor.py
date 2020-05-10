@@ -30,51 +30,58 @@ files = [path.join(relPath, path.basename(x)) for x in glob(absPath)]
 fileNum = 5
 fileChosen = files[fileNum-1]
 
+    # The number of channels we want to use to use during rechannelization
 rechan = 1025
-doAC = True
+    # Boolean value to determine if we perform cross-cor on the deduced satellite signal regions
 doCC = True
 
-
-
-ft1 , ft2 = f.performInv_Rechan_AC_CC( fileChosen , fileNum , reChan=rechan , performAutoCor=doAC , returnFFT = True , returnRTS=False)
-
-
-
-
-
-
-
-
-    # From the (rechannelized) auto-cor data of any file, these are the regions in fourier space showing satellite signals
-freq_ranges_good = np.array([[75,214],[350,490],[738,900]])
-freq_ranges_ok = np.array([[12,75],[215,340],[490,615]])
-freq_ranges_poor = np.array([[620,740]])
-    # Number of channels in the Fourier space plot used to determine satellite frequency ranges/channels
-totRefChans = 1025
 
 ADC_chans = 2048;   sampRate = 250e6;   numChansTaken = 26
 dtSecs = (ADC_chans/sampRate/numChansTaken)
 dtNanoSecs = dtSecs*10**9
 
-freq_ranges = [freq_ranges_good , freq_ranges_ok , freq_ranges_poor]
-freq_range_types = ['Good' , 'Ok' , 'Poor']
-doAllSats = True
-
-zpadCoeff = 1
 
 
 
+    # Perform rechannelized auto-cor to view and select channel regions of interest. Return FFTs of the recovered time-streams
+ft1 , ft2 = f.performInv_Rechan_AC_CC( fileChosen , fileNum , reChan=rechan , performAutoCor=True , returnFFT = True , returnRTS=False , 
+                                       originalNumChans=ADC_chans , originalSampRate=sampRate )
+
+
+    # An initial cross-cor of the satellite signals found in the auto-cor graph can be peformed here
 if doCC:
+        # From the (rechannelized) auto-cor data of any file, these are the regions in fourier space showing satellite signals
+        # ThESE MUST BE SET MANUALLY ONCE YOU HAVE SEEN THE AUTO-COR GRAPH
+    freq_ranges_good = np.array([[75,214],[350,490],[738,900]])
+    freq_ranges_ok = np.array([[12,75],[215,340],[490,615]])
+    freq_ranges_poor = np.array([[620,740]])
+        # Number of channels in the Fourier space plot used to determine satellite frequency ranges/channels
+    totRefChans = 1025
+    
+    
+    freq_ranges = [freq_ranges_good , freq_ranges_ok , freq_ranges_poor]
+    freq_range_types = ['Good' , 'Ok' , 'Poor']
+    doAllSats = True
+    
+    zpadCoeff = 1
+
+    """
+        # Cross-cor of Good Sat #2
+    f.performCC_on2Sats( ft1,ft2 , freq_ranges_good[1],freq_ranges_good[1] , totRefChans , dtNanoSecs , newSubLen=500 ,
+                        dt_units='' , zpadCoeff=zpadCoeff , plotTitle='' , doPlot=True , doPrint=False , useChunksOfRTS=True)
+        # Noise Cross-cor of Good Sats #2 and #3
+    f.performCC_on2Sats( ft1,ft2 , freq_ranges_good[1],freq_ranges_good[2] , totRefChans , dtNanoSecs , newSubLen=500 ,
+                        dt_units='' , zpadCoeff=zpadCoeff , plotTitle='' , doPlot=True , doPrint=False , useChunksOfRTS=True)
+    """
     
     f.performCC_analysisOnSats( ft1,ft2 , freq_ranges_good , totRefChans , dtNanoSecs , newSubLen=500 ,
-                              dt_units='ns' , satDesignation='Good' , zpadCoeff=zpadCoeff , useChunksOfRTS=True)
+                              dt_units='ns' , satDesignation=freq_range_types[0] , zpadCoeff=zpadCoeff , useChunksOfRTS=True)
     if doAllSats:
         f.performCC_analysisOnSats( ft1,ft2 , freq_ranges_ok , totRefChans , dtNanoSecs , newSubLen=500 ,
-                              dt_units='ns' , satDesignation='Ok' , zpadCoeff=zpadCoeff , useChunksOfRTS=True)
+                              dt_units='ns' , satDesignation=freq_range_types[1] , zpadCoeff=zpadCoeff , useChunksOfRTS=True)
         
         f.performCC_analysisOnSats( ft1,ft2 , freq_ranges_poor , totRefChans , dtNanoSecs , newSubLen=500 ,
-                              dt_units='ns' , satDesignation='Poor' , zpadCoeff=zpadCoeff , useChunksOfRTS=True)
-    
+                              dt_units='ns' , satDesignation=freq_range_types[2] , zpadCoeff=zpadCoeff , useChunksOfRTS=True)
     
     
 

@@ -18,7 +18,6 @@ In addition, data regarding the location of the inferred xcorr peak as well as t
 import numpy as np
 import matplotlib.pyplot as plt
 from os import path
-#import gc
 import monteCarloFuncs as mc
 
 
@@ -34,15 +33,11 @@ A short setup phase before performing some Monte Carlo's on the data
             # found in 'freq_ranges_good', we would designate sat_A = 2 and satTypeA='Good'
     # sat_B was the satellite we used to determine the (over-estimated) noise by aligning the different polarizations of the A and B signals 
     # in Fourier space and cross-correlating them
-"""============================================================================"""
-
 sat_A = 2;    satTypeA='Good'
 sat_B = 3;    satTypeB='Good'
 
-"""^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"""
-
-
-
+    # What were the min and max observation times?
+minObsTime = 5.;    maxObsTime = 125.
 
 
 
@@ -50,16 +45,9 @@ sat_B = 3;    satTypeB='Good'
     # This controls how many additional zeros we had added to the end of a Fourier Transform to increase interpolation 
     # between points when inverting back to time-stream space. It is based of a multiple of the original FT length. 
     # Therefore, a 'zpadCoeff' of 1 adds ~100% more points (as zeros) to the end of the FT
-"""============================================================================"""
-
-zpadCoeff = 0
-
-"""^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"""
+zpadCoeff = 1
 if zpadCoeff==0: zpad_str = '_noZPad'
-else:            zpad_str = '_zPadWith'+str(int(zpadCoeff))+'p'+str(int((zpadCoeff % int(zpadCoeff))*10))+'xLenOfFT'
-
-
-
+else:            zpad_str = '_zPadCoeff'+str(int(zpadCoeff))+'p'+str(int((zpadCoeff % int(zpadCoeff))*10))
 
 
 
@@ -70,30 +58,26 @@ cc_len = int( chunk_len*(zpadCoeff+1) ) + int(2*zpadCoeff)
 
 
 
-
-
-
-"""============================================================================"""
-
-    # Boolean value to check if we want to save the timing error data generated for future use
-save=True
     # The relative path from the current directory to where the raw data had been stored
 relPath = "dataFromEarlyFeb"
     # Name of the directory where we want to funnel the cross-cor and noise data generated
     # This directory will be created in the same directory the raw data is in
-output_directory = "xcorr_"+satTypeA+"Sat"+str(sat_A)+"_wNoiseUsing_"+satTypeB+"Sat"+str(sat_B)
+#output_directory = "xcorr_"+satTypeA+"Sat"+str(sat_A)+"_wNoiseUsing_"+satTypeB+"Sat"+str(sat_B)
+output_directory = "xcorr_"+satTypeA+"Sat"+str(sat_A)+"_withNoiseUsing_"+satTypeB+"Sat"+str(sat_B)+"_obsTime"+str(int(minObsTime))+"to"+str(int(maxObsTime))+"secs"
 #output_directory = ""
 output_directory = path.join(relPath, output_directory)
 
-"""^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"""
-
     
 
-
-
-    # Boolean value to check if  we want to plot the cross-cor and noise outputs as we create them
+    # Boolean value to check if we want to save the timing error data generated for future use
+save=False
+    # Boolean value to check if  we want to plot various things as we do the MC
 doPlot=False
 doPlotInMC=False
+    # If we only want to plot the cross-cors and noise obtained, set doMC = False and doPlot=True
+doMC = True
+
+
     # These parameters control plot label sizes
 plt.rc('font', size=14)
 plt.rc('axes', titlesize=30);     plt.rc('axes', labelsize=25)    
@@ -105,7 +89,7 @@ plt.rc('xtick', labelsize=18);    plt.rc('ytick', labelsize=18);    plt.rc('lege
 
 
 """
-The setup phase is now complete. Let's get crackin
+The setup phase is now complete. Let's get crackin'
 """
 
 
@@ -131,14 +115,12 @@ for i in range(numberOfObs):
         noise = np.load(output_directory+r"\ccLen"+str(cc_len)+"_noiseCC_"+satTypeA+'Sat'+str(sat_A)+satTypeB+'Sat'+str(sat_B)+"_obsTime"+obsTime_str+"secs"+zpad_str+".npy" )
    
      
-        
-    SNR_fromRMS = round(  np.max(np.abs(crossCor))/np.sqrt(np.mean(noise**2)) , 1  )
-    SNR_fromSTD = round(  np.max(np.abs(crossCor))/np.std(noise) , 1  )
-    SNR[i] = (SNR_fromRMS + SNR_fromSTD) / 2
-    
+    SNR[i] = round(  np.max(np.abs(crossCor))/np.std(noise) , 2  )
+    print("SNR at "+str(obsTimes[i])+" secs of obsTime = "+str(SNR[i]))
     
     
     if doPlot:
+        
         plt.figure()
         plt.plot(time_lag , crossCor)
         plt.grid()
@@ -156,32 +138,37 @@ for i in range(numberOfObs):
         plt.xlim(-20000,20000)
         
     
-        # Finding the location of the peak in the cross-correlation
-    peakIndex = mc.findPeak( time_lag , crossCor )
-    #near0x , near0y = mc.getZeroCrossingCoords( peakIndex , time_lag , crossCor , returnIndex=False)
-    
-        # returns the indices to the left and right of our peak
-    near0leftOfPeak , near0rightOfPeak = mc.getZeroCrossingCoords( peakIndex , time_lag , crossCor , returnIndex=True , doPlot=doPlotInMC)
-    
-    #zeroScat , median , quantiles = f.runZeroCrossingMC( near0leftOfPeak , time_lag , crossCor , noise , numTrials=10000)
-    #print("Difference in quantiles = "+str((quantiles[1]-quantiles[0])))
-    #print("Mean = "+str(np.mean(zeroScat)))
-    #print("STD = "+str(np.std(zeroScat)))
-    
-    
-        # Runs the quadratic least-squares Monte Carlo about the peak of our cross-correlation
-    peakScatter , meds , quantiles = mc.runParabolaFitMC( near0leftOfPeak[0] , near0rightOfPeak[1] , time_lag , crossCor , noise ,
-                                                         numTrials=15000 , doPlot=doPlotInMC , doPrint=False)
-    peakScatter = np.transpose(peakScatter)
-    mean = np.mean(peakScatter[1])
-    std = np.std(peakScatter[1])
-    print("Mean xPeak = "+ str(mean) +".   STD xPeak = "+ str(std))
-    mean_Xpeak[i] = mean
-    timing_errors[i] = std
+        # NOTE: The following commented code was originally used for another timing error estimation technique, where instead of fitting a quadratic to a peak,
+        #       a linear fit was performed on the 2 points to the left and right of a zero-crossing close to a max peak. This technique is not used anymore,
+        #       but its corpse remains for education purposes
+    if doMC:
+        
+            # Finding the location of the peak in the cross-correlation
+        peakIndex = mc.findPeak( time_lag , crossCor )
+        #near0x , near0y = mc.getZeroCrossingCoords( peakIndex , time_lag , crossCor , returnIndex=False)
+        
+            # returns the indices to the left and right of our peak
+        near0leftOfPeak , near0rightOfPeak = mc.getZeroCrossingCoords( peakIndex , time_lag , crossCor , returnIndex=True , doPlot=doPlotInMC)
+        
+        #zeroScat , median , quantiles = f.runZeroCrossingMC( near0leftOfPeak , time_lag , crossCor , noise , numTrials=10000)
+        #print("Difference in quantiles = "+str((quantiles[1]-quantiles[0])))
+        #print("Mean = "+str(np.mean(zeroScat)))
+        #print("STD = "+str(np.std(zeroScat)))
+        
+        
+            # Runs the quadratic least-squares Monte Carlo about the peak of our cross-correlation
+        peakScatter , meds , quantiles = mc.runParabolaFitMC( near0leftOfPeak[0] , near0rightOfPeak[1] , time_lag , crossCor , noise ,
+                                                             numTrials=15000 , doPlot=doPlotInMC , doPrint=False)
+        peakScatter = np.transpose(peakScatter)
+        mean = np.mean(peakScatter[1])
+        std = np.std(peakScatter[1])
+        print("Mean xPeak = "+ str(mean) +".   STD xPeak = "+ str(std))
+        mean_Xpeak[i] = mean
+        timing_errors[i] = std
     
 
 
-if save:
+if save and doMC:
     np.save(output_directory + r"\obsTimes_timeErr_xPeak_SNR" + "_crossCor_"+satTypeA+"Sat"+str(sat_A)+zpad_str+".npy" , [obsTimes , timing_errors , mean_Xpeak , SNR] )
 
 
