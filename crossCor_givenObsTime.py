@@ -42,9 +42,9 @@ sat_A = 2;    satTypeA='Good'
 sat_B = 3;    satTypeB='Good'
 
     # amount of different observation times we want to perform
-numberOfObs = 5
+numberOfObs = 25
     # min and max observation times in seconds
-minObsTime = 1.;    maxObsTime = 5.
+minObsTime = 5.;    maxObsTime = 125.
 obsTimes = np.linspace( minObsTime , maxObsTime , numberOfObs , endpoint=True )
 
     # ZERO-PADDING
@@ -60,11 +60,11 @@ else:            zpad_str = '_zPadCoeff'+str(int(zpadCoeff))+'p'+str(int((zpadCo
 chunk_len = 1000
 
     # Boolean value to check if we want to save the cross-cor data generated for future use
-save=False
+save=True
     # Boolean value to check if  we want to plot the cross-cor and noise outputs as we create them
-doPlot=True
+doPlot=False
     # Boolean value to decide if we observe the raw data in order or in reverse
-readFilesInOrder = False
+readFilesInOrder = True
     
 
 """^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"""
