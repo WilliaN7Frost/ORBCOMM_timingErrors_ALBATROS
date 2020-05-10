@@ -63,7 +63,7 @@ chunk_len = 1000
 save=True
     # Boolean value to check if  we want to plot the cross-cor and noise outputs as we create them
 doPlot=False
-    # Boolean value to decide if we observe the raw data in order or in reverse
+    # Boolean value to decide if we observe the raw files in order or in reverse
 readFilesInOrder = True
     
 
