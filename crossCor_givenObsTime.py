@@ -78,7 +78,7 @@ This next section of code is just a setup phase before we get to observing what'
 """
 
 
-    # Location of the files you want to unpack
+    # Location of the files you want to unpack, as well as the file type we wish to analyse
 absPathOfData = "/Users/wilia/OneDrive/Documents/McGill/Academics/Endgame/PHYS489_AntennaTimeAccuracy/pfb_final/dataFromEarlyFeb/*.raw"
     # The relative path from where this code is located to where the data is
 relPathOfData = "dataFromEarlyFeb"
