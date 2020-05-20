@@ -15,6 +15,8 @@ A collection of functions used to:
 import numpy as np
 import matplotlib.pyplot as plt
 import read_4bit
+    # pfb functions can be found at richard shaw's 'pfb-inverse' repo
+    # https://github.com/jrs65/pfb-inverse
 import pfb
 import time as t
 import gc
